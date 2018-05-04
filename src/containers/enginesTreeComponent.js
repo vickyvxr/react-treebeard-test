@@ -4,6 +4,15 @@ import {Panel} from 'react-bootstrap';
 import { fetchEngineNodes }  from '../actions/engines';
 import { connect } from 'react-redux';
 
+const translateTypeToIcon= (type)=>{
+    switch(type){
+       case "CATEGORY": return "fa fa-folder ";
+       case "TEMPLATE": return "fa fa-list-alt ";
+       case "INSTANCE" : return "fa fa-file";
+       default: return "fa fa-folder";
+    }
+}
+
 class EnginesTreeComponent extends Component {
     render() {
         return (
@@ -12,7 +21,10 @@ class EnginesTreeComponent extends Component {
                     <Panel.Title componentClass="h3">Engines</Panel.Title>
                 </Panel.Heading>
                 <Panel.Body>
-                    <GenericWFTree title="Engines" rootNodes={this.props.rootNodes} nodes={this.props.treeNodes} onLoadNode = {this.props.onLoadNode}/>
+                    <GenericWFTree title="Engines" rootNodes={this.props.rootNodes} 
+                        nodes={this.props.treeNodes} 
+                        onLoadNode = {this.props.onLoadNode}
+                        iconsTranslator={translateTypeToIcon}/>
                 </Panel.Body>
             </Panel>
         );

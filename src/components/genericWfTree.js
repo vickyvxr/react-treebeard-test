@@ -2,9 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {Treebeard,decorators} from 'react-treebeard';
 import {treeStyles} from './../constants/styles';
-
-
-
+import {convertNodesToTree} from './../utils/treeUtils';
 
 class GenericWFTree extends Component {
     
@@ -17,7 +15,7 @@ class GenericWFTree extends Component {
         };
     }
 
-    componentWillReceiveProps(nextProps){
+    componentWillReceiveProps = (nextProps)=>{
         if (nextProps && nextProps.rootNodes){
           const {title,rootNodes, nodes} = nextProps;
           const finalTree =this.buildInitialTree(title,rootNodes, nodes,this.state.activeNode);
@@ -29,38 +27,13 @@ class GenericWFTree extends Component {
 
     buildInitialTree = (title, rootNodes, nodes, activeNode) =>{
         let nodeId = (activeNode) ? activeNode : (this.state) ? this.state.activeNode:null;
-        const data = {
-            id: "-1",
-            name: title,
-            toggled: rootNodes && rootNodes.length>0,
-            children: (rootNodes) ? this.buildChildrenTree(rootNodes, nodes,nodeId) : [],
-            hasChildren: true
-        }
-        this.onToggle = this.onToggle.bind(this);
-        this.selectNode= this.selectNode.bind(this);
+        const data = convertNodesToTree(title, rootNodes, nodes, nodeId);
         return data;
     }
 
-    buildChildrenTree = (nodes, nodesMap,nodeId) =>{
-        return nodes.map((idNode)=>{
-            const elem = nodesMap[idNode];
-            let children = elem.hasChildren ? [] : null;
-            children =(elem.children && elem.children.length>0) ? this.buildChildrenTree(elem.children, nodesMap,nodeId):children;
-            return {
-                id: elem.id,
-                name: elem.title,
-                description: elem.description,
-                toggled: elem.children && elem.children.length>0, 
-                hasChildren: elem.hasChildren,
-                type: elem.type,
-                active: elem.id === nodeId,
-                children
-            }
-        })
+    
 
-    }
-
-    onToggle(node){
+    onToggle=(node)=>{
         const {id, toggled}=node;
         // call fetch from web Service
          if (node.hasChildren && node.children.length === 0){
@@ -115,9 +88,10 @@ class GenericWFTree extends Component {
     }
 
     drawMainNodeArea = (node, active, type, name, description) =>{
+        const icon = (this.props.iconsTranslator) ? this.props.iconsTranslator(type) : "fa fa-folder";
         return (<span title={description} onClick={()=>{this.selectNode(node)}}
                 style={{display: 'table-cell', fontWeight: active?'bolder':'normal'}}>
-                    <i className={translateTypeToIcon(type)} style={{marginRight:5}}> </i>
+                    <i className={icon} style={{marginRight:5}}> </i>
                     {name}
                 </span>);
     }
@@ -130,25 +104,21 @@ class GenericWFTree extends Component {
     }
 
 
-    render() {
+    render = ()=> {
         decorators.Container =this.drawNode;
         return (            
             <div>
-                <Treebeard data={this.state.tree} decorators={decorators}  style={treeStyles} ref="treeRef" />
+                <Treebeard data={this.state.tree} 
+                    decorators={decorators}  
+                    style={treeStyles} 
+                    ref="treeRef" />
             </div>
         );
     }
 }
 
 
-const translateTypeToIcon= (type)=>{
-    switch(type){
-       case "CATEGORY": return "fa fa-folder ";
-       case "TEMPLATE": return "fa fa-list-alt ";
-       case "INSTANCE" : return "fa fa-file";
-       default: return "fa fa-folder";
-    }
-}
+
 
 GenericWFTree.propTypes = {
     title: PropTypes.string.isRequired,
